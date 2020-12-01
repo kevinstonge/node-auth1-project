@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('./usersModel');
 const bcrypt = require('bcrypt');
-const { as } = require('../../data/dbConfig');
 
 const generateHash = async (password) => {
     try {
@@ -34,12 +33,17 @@ const checkIfUsernameExists = async (req, res, next) => {
 }
 
 router.get('/', async (req, res) => {
-    try {
-        const users = await db.getUsers();
-        res.status(200).json({users})
+    if (req.session.loggedIn === true) {
+        try {
+            const users = await db.getUsers();
+            res.status(200).json({ users })
+        }
+        catch (error) {
+            res.status(500).json({ error })
+        }
     }
-    catch (error) {
-        res.status(500).json({error})
+    else {
+        res.status(401).json({message: "error: you are not logged in!"})
     }
 });
 
@@ -64,11 +68,13 @@ router.post('/register', checkIfUsernameExists, async (req, res) => {
 })
 
 router.post('/login', checkIfUsernameExists, async (req, res) => {
+    req.session.loggedIn = false;
     try {
         if (req.userExists) {
             const [user] = await db.getUsers(req.body.username);
             const loggedIn = await bcrypt.compare(req.body.password, user.hash);
             if (loggedIn) {
+                req.session.loggedIn = true;
                 res.status(200).json({message: "logged in!"})
             }
             else {
