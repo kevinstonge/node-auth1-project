@@ -1,0 +1,21 @@
+@import "./base.scss";
+#root {
+  @include flexC();
+  gap: 1rem;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: $b1;
+  color: $f1;
+  section {
+    @include flexC();
+    margin: 0 1rem;
+    padding: 1rem;
+    background-color: $b2;
+    color: $f2;
+    form {
+      @include flexC();
+      gap: 0.5rem;
+    }
+  }
+}

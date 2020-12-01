@@ -33,6 +33,7 @@ const checkIfUsernameExists = async (req, res, next) => {
 }
 
 router.get('/', async (req, res) => {
+    console.log(req.session);
     if (req.session.loggedIn === true) {
         try {
             const users = await db.getUsers();
@@ -56,7 +57,6 @@ router.post('/register', checkIfUsernameExists, async (req, res) => {
             else {
                 const hash = await generateHash(password);
                 const userObject = { username, email, hash }
-                console.log(hash);
                 const newUserId = await db.register(userObject);
                 res.status(201).json({message: `user created with user id: ${newUserId}`})
             }
@@ -68,14 +68,13 @@ router.post('/register', checkIfUsernameExists, async (req, res) => {
 })
 
 router.post('/login', checkIfUsernameExists, async (req, res) => {
-    req.session.loggedIn = false;
     try {
         if (req.userExists) {
             const [user] = await db.getUsers(req.body.username);
             const loggedIn = await bcrypt.compare(req.body.password, user.hash);
             if (loggedIn) {
                 req.session.loggedIn = true;
-                res.status(200).json({message: "logged in!"})
+                res.status(200).json({ message: "logged in!" });
             }
             else {
                 res.status(401).json({message: "incorrect password"})

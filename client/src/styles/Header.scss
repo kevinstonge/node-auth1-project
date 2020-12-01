@@ -1,0 +1,27 @@
+@import "./base.scss";
+header {
+  @include flexR();
+  margin: 0 1rem;
+  padding: 1rem;
+  background-color: $b2;
+  color: $f2;
+  h1 {
+    font-size: 1.2rem;
+  }
+  nav {
+    @include flexR();
+    gap: 1rem;
+    a {
+      color: $f3;
+      background-color: $b3;
+      padding: 0.5rem;
+      text-decoration: none;
+      &.active {
+        background-color: transparent;
+        &:hover {
+          cursor: default;
+        }
+      }
+    }
+  }
+}

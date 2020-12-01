@@ -1,0 +1,20 @@
+$b1: #222;
+$b2: #333;
+$b3: #444;
+$f1: #bbb;
+$f2: #ccc;
+$f3: #ddd;
+
+@mixin flexR() {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+}
+
+@mixin flexC() {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-content: center;
+}
