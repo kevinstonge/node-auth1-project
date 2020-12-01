@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('./usersModel');
 const bcrypt = require('bcrypt');
+const { as } = require('../../data/dbConfig');
 
 const generateHash = async (password) => {
     try {
@@ -15,13 +16,17 @@ const generateHash = async (password) => {
 
 const checkIfUsernameExists = async (req, res, next) => {
     try {
-        const [user] = await db.getUser(req.body.username);
-        if (user) {
-            res.status(401).json({message: "that username already exists"})
-        }
-        else {
+        if (req.body && req.body.username) {
+            const [user] = await db.getUser(req.body.username);
+            if (user) {
+                req.userExists = true;
+            }
+            else {
+                req.userExists = false;
+            }
             next();
         }
+        else { res.status(401).json({message: "error: please provide a username"})}
     }
     catch (error) {
         throw error
@@ -38,8 +43,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', checkIfUsernameExists, async (req, res) => {
+router.post('/register', checkIfUsernameExists, async (req, res) => {
     try {
+        if (req.userExists === true) { res.status(401).json({message: "error: username already exists"})}
         if (req.body) {
             const { username, email, password } = req.body;
             if (!username || !email || !password) { res.status(401).json({ message: "error: username, email, and password are required. New user registration failed!" }) }
@@ -54,6 +60,28 @@ router.post('/', checkIfUsernameExists, async (req, res) => {
     }
     catch (error) {
         res.status(500).json({message: "error creating user", error})
+    }
+})
+
+router.post('/login', checkIfUsernameExists, async (req, res) => {
+    try {
+        if (req.userExists) {
+            const [user] = await db.getUsers(req.body.username);
+            const loggedIn = await bcrypt.compare(req.body.password, user.hash);
+            if (loggedIn) {
+                res.status(200).json({message: "logged in!"})
+            }
+            else {
+                res.status(401).json({message: "incorrect password"})
+            }
+        }
+        else {
+            res.status(401).json({message: "error: that username does not exist"})
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({message: "server error ocurred while attempting to log in", error})
     }
 })
 
